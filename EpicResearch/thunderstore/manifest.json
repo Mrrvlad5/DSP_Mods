@@ -1,0 +1,10 @@
+﻿{
+  "namespace": "Mrrvlad",
+  "name": "EpicResearch",
+  "description": "Modifies research requirements for a slower game progression.",
+  "version_number": "0.1.0",
+  "dependencies": [
+    "xiaoye97-BepInEx-5.4.17"
+  ],
+  "website_url": "https://github.com/"
+}
