@@ -5,6 +5,7 @@
   "version_number": "0.1.0",
   "dependencies": [
     "xiaoye97-BepInEx-5.4.17"
+    "xiaoye97-LDBTool-2.0.6",
   ],
   "website_url": "https://github.com/Mrrvlad5/DSP_Mods/tree/main/EpicResearch"
 }
