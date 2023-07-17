@@ -18,7 +18,7 @@ namespace DysonSphereProgram.Modding.StarterTemplate
     {
         public const string GUID = "epic.research.mrrvlad";
         public const string NAME = "EpicResearch";
-        public const string VERSION = "0.1.0";
+        public const string VERSION = "0.1.1";
 
         private Harmony _harmony;
         internal static ManualLogSource Log;
@@ -51,13 +51,13 @@ namespace DysonSphereProgram.Modding.StarterTemplate
         {
             Plugin.Log = Logger;
             _harmony = new Harmony(GUID);
-            Logger.LogInfo("StarterTemplate Awake() called");
+            Logger.LogInfo("EpicResearch Awake() called");
             ConfigEntry<bool> config_unlock = Config.Bind<bool>("General", "AdjustTechUnlocks", true,
             "Modify tech tree unlocks for rare receips");
             ConfigEntry<bool> config_cost = Config.Bind<bool>("General", "AdjustTechCosts", true,
             "Modify type and quantity of materials needed to unlock a tech");
             ConfigEntry<int> config_multiple = Config.Bind<int>("General", "TechCostMultiple", 100,
-            "Apply this multiple to tech costs");
+            "Apply this multiple to tech costs. Valid vaules are 1, 5, 20, 50, 100.");
             Configs.AdjustTechUnlocks = config_unlock.Value;
             Configs.AdjustTechCosts = config_cost.Value;
             if (config_multiple.Value <= 1)
@@ -212,7 +212,7 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             }
             // Adjust vessel capacity with unlocks.
             {
-                for (int tech_id = 3503; tech_id <= 3408; tech_id++)
+                for (int tech_id = 3503; tech_id <= 3508; tech_id++)
                 {
                     if (tech_id == 3505) continue;
                     if (tech_id == 3506) continue;

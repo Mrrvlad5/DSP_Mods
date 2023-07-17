@@ -42,5 +42,5 @@ Disable ability to "cursor carry" unlimitted amount of resources in cursor durin
 Reach out to mrrvlad#0925 on discord / official DSP server.
 
 ## Changelog
-- v0.1.0
+- v0.1.1
 	- WIP. Initial version. (Game Version 0.9.27.15466)
