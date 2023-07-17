@@ -2,10 +2,10 @@
   "namespace": "Mrrvlad",
   "name": "EpicResearch",
   "description": "Modifies research requirements for a slower game progression.",
-  "version_number": "0.1.0",
+  "version_number": "0.1.1",
   "dependencies": [
-    "xiaoye97-BepInEx-5.4.17"
-    "xiaoye97-LDBTool-2.0.6",
+    "xiaoye97-BepInEx-5.4.17",
+    "xiaoye97-LDBTool-2.0.6"
   ],
   "website_url": "https://github.com/Mrrvlad5/DSP_Mods/tree/main/EpicResearch"
 }
