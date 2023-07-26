@@ -10,15 +10,16 @@ namespace DysonSphereProgram.Modding.StarterTemplate
         public static bool AdjustTechUnlocks = true;
         public static bool AdjustTechCosts = true;
         public static double TechCostMultiple = 100;
+        public static float ResourceMultiple = 1.0f;
     }
 
     [BepInPlugin(GUID, NAME, VERSION)]
     [BepInProcess("DSPGAME.exe")]
-    public class Plugin : BaseUnityPlugin
+    public class EpicResearchPlugin : BaseUnityPlugin
     {
-        public const string GUID = "epic.research.mrrvlad";
+        public const string GUID = "mrrvlad.epic.research";
         public const string NAME = "EpicResearch";
-        public const string VERSION = "0.1.1";
+        public const string VERSION = "0.2.1";
 
         private Harmony _harmony;
         internal static ManualLogSource Log;
@@ -47,28 +48,86 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             return s;
         }
 
+        [HarmonyPostfix, HarmonyPatch(typeof(GameMain), "Begin")]
+        public static void GameMain_Begin_Postfix()
+        {
+            Log.LogInfo("GameMain_Begin_Postfix called at gameTick: " + GameMain.gameTick.ToString() + " , resource multiple: " + Configs.ResourceMultiple.ToString());
+            foreach (StarData s in GameMain.data.galaxy.stars)
+            {
+                s.resourceCoef *= Configs.ResourceMultiple;
+                //Log.LogInfo("StarName:" + s.name);
+                foreach (PlanetData p in s.planets)
+                {
+                    //Log.LogInfo("PlanetName:" + p.name);
+                    if (p.gasSpeeds != null)
+                        for (int gs_id = 0; gs_id < p.gasSpeeds.GetLength(0); gs_id++)
+                        {
+                            p.gasSpeeds[gs_id] *= Configs.ResourceMultiple;
+                        }
+                    else 
+                    {
+                        if (p.runtimeVeinGroups != null && p.factory == null)
+                        {
+                            //Log.LogInfo("p.runtimeVeinGroups :" + p.runtimeVeinGroups.GetLength(0));
+                            int vg_count = p.runtimeVeinGroups.GetLength(0);
+                            for (int i = 0; i < vg_count; i++)
+                            {
+                                p.runtimeVeinGroups[i].amount = (long)(Configs.ResourceMultiple* p.runtimeVeinGroups[i].amount);
+                            }
+                        }
+                        
+                        if (GameMain.gameTick != 0) continue;
+                        
+                        if (p.factory != null && p.factory.veinPool != null)
+                        {
+                            //Log.LogInfo("p.factory.veinPool :" + p.factory.veinPool.GetLength(0));
+                            int vg_count = p.factory.veinPool.GetLength(0);
+                            for (int i = 0; i < vg_count; i++)
+                            {
+                                p.factory.veinPool[i].amount = (int)(Configs.ResourceMultiple * p.factory.veinPool[i].amount);
+                            }
+                            p.factory.RecalculateAllVeinGroups();
+                        }
+                        if (p.data != null && p.data.veinPool != null)
+                        {
+                            //Log.LogInfo("p.data.veinPool :" + p.data.veinPool.GetLength(0));
+                            int vg_count = p.data.veinPool.GetLength(0);
+                            for (int i = 0; i < vg_count; i++)
+                            {
+                                p.data.veinPool[i].amount = (int)(Configs.ResourceMultiple * p.data.veinPool[i].amount);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         private void Awake()
         {
-            Plugin.Log = Logger;
+            EpicResearchPlugin.Log = base.Logger;
             _harmony = new Harmony(GUID);
+            Harmony.CreateAndPatchAll(typeof(EpicResearchPlugin));
             Logger.LogInfo("EpicResearch Awake() called");
             ConfigEntry<bool> config_unlock = Config.Bind<bool>("General", "AdjustTechUnlocks", true,
             "Modify tech tree unlocks for rare receips");
             ConfigEntry<bool> config_cost = Config.Bind<bool>("General", "AdjustTechCosts", true,
             "Modify type and quantity of materials needed to unlock a tech");
-            ConfigEntry<int> config_multiple = Config.Bind<int>("General", "TechCostMultiple", 100,
+            ConfigEntry<int> config_tech_multiple = Config.Bind<int>("General", "TechCostMultiple", 100,
             "Apply this multiple to tech costs. Valid vaules are 1, 5, 20, 50, 100.");
+            ConfigEntry<float> config_resource_multiple = Config.Bind<float>("General", "ResourceMultiple", 1.0f,
+            "Additional resource multipler for the galaxy. Affects all ore, gas giants, oil. Remote oil seems to be affected as sqrt of this value.");
             Configs.AdjustTechUnlocks = config_unlock.Value;
             Configs.AdjustTechCosts = config_cost.Value;
-            if (config_multiple.Value <= 1)
+            if (config_tech_multiple.Value <= 1)
                 Configs.TechCostMultiple = 1;
-            else if (config_multiple.Value <= 5)
+            else if (config_tech_multiple.Value <= 5)
                 Configs.TechCostMultiple = 5;
-            else if (config_multiple.Value <= 20)
+            else if (config_tech_multiple.Value <= 20)
                 Configs.TechCostMultiple = 20;
-            else if (config_multiple.Value <= 50)
+            else if (config_tech_multiple.Value <= 50)
                 Configs.TechCostMultiple = 50;
             else Configs.TechCostMultiple = 100;
+            Configs.ResourceMultiple = config_resource_multiple.Value;
 
             if (Configs.AdjustTechUnlocks)
                 AdjustUnlocks();
@@ -91,7 +150,6 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             //        " UnlockFunctions: " + Print(LDB.techs.dataArray[i].UnlockFunctions)
             //        ); ;
             //}
-
         }
 
         private void AdjustUnlocks()
@@ -334,7 +392,7 @@ namespace DysonSphereProgram.Modding.StarterTemplate
         {
             Logger.LogInfo("StarterTemplate OnDestroy() called");
             _harmony?.UnpatchSelf();
-            Plugin.Log = null;
+            EpicResearchPlugin.Log = null;
         }
 
         // {from_tech_id, to_tech_id, receip_id}
@@ -356,10 +414,10 @@ namespace DysonSphereProgram.Modding.StarterTemplate
         {
             tech_data = new System.Collections.Generic.Dictionary<int, int[]>();
             tech_data[1001] = new int[] { 1200, 2, 30, -1, -1, -1, -1, -1, 1202, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[1601] = new int[] { 9000, 10, 20, 20, -1, -1, -1, -1, 1301, 1201, 6003, 6004, 6005, 6006 };
+            tech_data[1601] = new int[] { 3600, 10, 20, 20, -1, -1, -1, -1, 1301, 1201, 6003, 6004, 6005, 6006 };
             tech_data[1401] = new int[] { 1800, 2, 40, 40, -1, -1, -1, -1, 1202, 1301, 6003, 6004, 6005, 6006 };
-            tech_data[1002] = new int[] { 9000, 10, 40, 40, -1, -1, -1, -1, 1202, 1301, 6003, 6004, 6005, 6006 };
-            tech_data[1201] = new int[] { 3600, 10, 40, 40, -1, -1, -1, -1, 1101, 1104, 6003, 6004, 6005, 6006 };
+            tech_data[1002] = new int[] { 3600, 10, 100, 100, -1, -1, -1, -1, 1202, 1301, 6003, 6004, 6005, 6006 };
+            tech_data[1201] = new int[] { 2400, 10, 30, 30, -1, -1, -1, -1, 1101, 1104, 6003, 6004, 6005, 6006 };
             tech_data[1120] = new int[] { 9000, 100, 20, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1101] = new int[] { 9000, 100, 20, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1701] = new int[] { 9000, 100, 20, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
@@ -441,7 +499,7 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             tech_data[2103] = new int[] { 108000, 100, 10, 10, 10, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2104] = new int[] { 300000, 100, -1, 6, 6, 6, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2105] = new int[] { 1440000, 100, 2, -1, -1, 2, 2, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[2201] = new int[] { 7200, 5, 30, -1, -1, -1, -1, -1, 1203, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[2201] = new int[] { 3600, 5, 60, -1, -1, -1, -1, -1, 1203, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2202] = new int[] { 36000, 10, 20, 20, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2203] = new int[] { 72000, 10, 20, 20, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2204] = new int[] { 180000, 100, 12, -1, 12, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
@@ -449,7 +507,7 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             tech_data[2206] = new int[] { 300000, 100, 12, -1, 12, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2207] = new int[] { 360000, 100, 12, 12, -1, 12, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2208] = new int[] { 1200000, 600, 1, -1, 1, 1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[2301] = new int[] { 7200, 10, 20, 30, -1, -1, -1, -1, 1103, 1301, 6003, 6004, 6005, 6006 };
+            tech_data[2301] = new int[] { 3600, 10, 40, 60, -1, -1, -1, -1, 1103, 1301, 6003, 6004, 6005, 6006 };
             tech_data[2302] = new int[] { 36000, 100, 2, 20, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2303] = new int[] { 72000, 100, 20, 20, 20, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2304] = new int[] { 180000, 200, -1, 12, 12, 12, 12, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
@@ -461,12 +519,12 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             tech_data[2404] = new int[] { 180000, 100, 12, -1, 12, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2405] = new int[] { 300000, 100, -1, 12, 12, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2406] = new int[] { 1440000, 100, 4, 4, -1, 4, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[2701] = new int[] { 12000, 1, 30, -1, -1, -1, -1, -1, 1301, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[2701] = new int[] { 3600, 2, 50, -1, -1, -1, -1, -1, 1301, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2702] = new int[] { 36000, 10, 10, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2703] = new int[] { 60000, 100, 3, 30, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2704] = new int[] { 192000, 100, 15, 15, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2705] = new int[] { 240000, 100, 15, 15, 15, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[2501] = new int[] { 7200, 10, 15, 30, 30, -1, -1, -1, 1030, 1006, 1109, 6004, 6005, 6006 };
+            tech_data[2501] = new int[] { 3600, 10, 30, 60, 60, -1, -1, -1, 1030, 1006, 1109, 6004, 6005, 6006 };
             tech_data[2502] = new int[] { 72000, 50, 2, 20, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2503] = new int[] { 216000, 20, 20, 20, 20, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2504] = new int[] { 600000, 100, 12, -1, 12, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
@@ -476,7 +534,7 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             tech_data[2603] = new int[] { 144000, 20, 20, 20, 20, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2604] = new int[] { 360000, 100, 12, 12, -1, 12, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2605] = new int[] { 1440000, 150, -1, 4, 4, -1, 4, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[2901] = new int[] { 10800, 10, 40, 20, -1, -1, -1, -1, 1006, 1202, 6003, 6004, 6005, 6006 };
+            tech_data[2901] = new int[] { 5400, 10, 80, 40, -1, -1, -1, -1, 1006, 1202, 6003, 6004, 6005, 6006 };
             tech_data[2902] = new int[] { 36000, 100, 5, 20, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2903] = new int[] { 180000, 10, 20, 20, 20, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2904] = new int[] { 720000, 200, 2, 2, -1, 10, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };

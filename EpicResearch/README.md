@@ -7,13 +7,14 @@ Modifies research requirements for a slower game progression.
 - Try on a Minimal resources 64 star seed, with 100 multiple and adjustments turned on for a hard challenge.
     - it is expected to run out or resources and having to move systems several times before unlocking warp and logistic warp.
     - it is expected to have a pre-warp logistics between systems at yellow and purple tech.
+- Allows to specify additional resource multipler.
 
 ## Configuration
 bool AdjustTechUnlocks = true
 
 - Change Logistic Warp to be availble at level 6 (instead of 4).
 - Move rare receips to be available further in the tech tree:
-    - Adv warper, Adv particle container are moved to mission complete tech.
+    - Adv warper, Adv particle container are moved to mission complete tech. 
     - Adv casmir crystal are moved to plane smelter tech that requires green.
     - Adv photon combiner are moved to quantumn printing tech that requires purple.
     - Adv nanotubes, Adv crystal silicon are moved to quantumn chem plant tech that requires green.
@@ -31,6 +32,9 @@ bool  AdjustTechCosts = true
 int TechCostMultiple = 100
 - Apply additional multiplier to hash and cube costs of technologies. Valid values are: {1, 5, 20, 50, 100}.
 
+float ResourceMultiple = 1
+- Additional resource multipler for the galaxy. Affects all ore, gas giants, oil. Remote oil is affected as a sqrt of this value.
+
 ## Installation Note
 This mod depends on BepInEx.
 
@@ -42,5 +46,9 @@ Disable ability to "cursor carry" unlimitted amount of resources in cursor durin
 Reach out to mrrvlad#0925 on discord / official DSP server.
 
 ## Changelog
+- v0.2.0
+	- Added ability to specify planet resource multipler. Applied after game's resource multipler. Affects all ores, gas giants, oil. Remote oil is affected as a sqrt of this value.
+    - Signifficantle reduce pre-automation research requirements.
+
 - v0.1.1
 	- WIP. Initial version. (Game Version 0.9.27.15466)
