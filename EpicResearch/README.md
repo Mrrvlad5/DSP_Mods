@@ -21,7 +21,7 @@ bool AdjustTechUnlocks = true
     - Adv diamonds is moved to adv mining machine tech.
     - Adv graphene is moved to gravity matrix tech.
 - Add 6 degree of sphere stress allowance when Gravity Lenses are availble (Gravity Wave refraction).
-- At levels 3-5, the speed of Vessels is improved by 1500m/s.
+- At levels 3-5, the speed of Vessels is improved by 3000m/s.
 - Vessel capacity is increased faster at levels 3-4.
 
 bool  AdjustTechCosts = true
@@ -39,13 +39,18 @@ float ResourceMultiple = 1
 This mod depends on BepInEx.
 
 ## Dev Plans
-Adjust tech costs after initial play-testing.
+Play-testing to validate and adjust tech costs.
 Disable ability to "cursor carry" unlimitted amount of resources in cursor during warp.
 
 ## Bug Reports, Comments, Suggestions
 Reach out to mrrvlad#0925 on discord / official DSP server.
 
 ## Changelog
+- v0.3.0
+	- Tech cost balancing pass - should be playable at minimal resources.
+    - Increased logistic speed bonus from 1500 to 3000 for level 3 to 5.
+    - Graphene from fire ice availble earlier at purple tech.
+
 - v0.2.0
 	- Added ability to specify planet resource multipler. Applied after game's resource multipler. Affects all ores, gas giants, oil. Remote oil is affected as a sqrt of this value.
     - Signifficantle reduce pre-automation research requirements.
