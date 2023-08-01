@@ -19,7 +19,7 @@ namespace DysonSphereProgram.Modding.StarterTemplate
     {
         public const string GUID = "mrrvlad.epic.research";
         public const string NAME = "EpicResearch";
-        public const string VERSION = "0.3.0";
+        public const string VERSION = "0.3.1";
 
         private Harmony _harmony;
         internal static ManualLogSource Log;
@@ -48,9 +48,31 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             return s;
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(GameMain), "Begin")]
-        public static void GameMain_Begin_Postfix()
+        //[HarmonyPostfix, HarmonyPatch(typeof(UniverseGen), "CreateGalaxy")]
+        //public static void UniverseGen_CreateGalaxy_Postfix()
+        //{
+        //    // if (GameMain.instance.isMenuDemo) return;
+        //    Log.LogInfo("UniverseGen_CreateGalaxy_Postfix called at gameTick: " + GameMain.gameTick.ToString() + " , resource multiple: " + Configs.ResourceMultiple.ToString());
+        //    foreach (StarData s in GameMain.data.galaxy.stars)
+        //    {
+        //        Log.LogInfo("StarName:" + s.name + " resource koef: " + s.resourceCoef.ToString());
+        //        s.resourceCoef *= Configs.ResourceMultiple;
+        //        foreach (PlanetData p in s.planets)
+        //        {
+        //            Log.LogInfo("PlanetName:" + p.name);
+        //            if (p.gasSpeeds != null)
+        //                for (int gs_id = 0; gs_id < p.gasSpeeds.GetLength(0); gs_id++)
+        //                {
+        //                    p.gasSpeeds[gs_id] *= Configs.ResourceMultiple;
+        //                }
+        //        }
+        //    }
+        //}
+
+        [HarmonyPrefix, HarmonyPatch(typeof(GameMain), "Begin")]
+        public static void GameMain_Begin_Prefix()
         {
+            if (GameMain.instance.isMenuDemo) return;
             Log.LogInfo("GameMain_Begin_Postfix called at gameTick: " + GameMain.gameTick.ToString() + " , resource multiple: " + Configs.ResourceMultiple.ToString());
             foreach (StarData s in GameMain.data.galaxy.stars)
             {
@@ -58,29 +80,29 @@ namespace DysonSphereProgram.Modding.StarterTemplate
                 s.resourceCoef *= Configs.ResourceMultiple;
                 foreach (PlanetData p in s.planets)
                 {
-                    //Log.LogInfo("PlanetName:" + p.name);
+                    Log.LogInfo("PlanetName:" + p.name);
                     if (p.gasSpeeds != null)
                         for (int gs_id = 0; gs_id < p.gasSpeeds.GetLength(0); gs_id++)
                         {
                             p.gasSpeeds[gs_id] *= Configs.ResourceMultiple;
                         }
-                    else 
+                    else
                     {
                         if (p.runtimeVeinGroups != null && p.factory == null)
                         {
-                            //Log.LogInfo("p.runtimeVeinGroups :" + p.runtimeVeinGroups.GetLength(0));
+                            Log.LogInfo("p.runtimeVeinGroups :" + p.runtimeVeinGroups.GetLength(0));
                             int vg_count = p.runtimeVeinGroups.GetLength(0);
                             for (int i = 0; i < vg_count; i++)
                             {
-                                p.runtimeVeinGroups[i].amount = (long)(Configs.ResourceMultiple* p.runtimeVeinGroups[i].amount);
+                                p.runtimeVeinGroups[i].amount = (long)(Configs.ResourceMultiple * p.runtimeVeinGroups[i].amount);
                             }
                         }
-                        
+
                         if (GameMain.gameTick != 0) continue;
-                        
+
                         if (p.factory != null && p.factory.veinPool != null)
                         {
-                            //Log.LogInfo("p.factory.veinPool :" + p.factory.veinPool.GetLength(0));
+                            Log.LogInfo("p.factory.veinPool :" + p.factory.veinPool.GetLength(0));
                             int vg_count = p.factory.veinPool.GetLength(0);
                             for (int i = 0; i < vg_count; i++)
                             {
@@ -90,7 +112,7 @@ namespace DysonSphereProgram.Modding.StarterTemplate
                         }
                         if (p.data != null && p.data.veinPool != null)
                         {
-                            //Log.LogInfo("p.data.veinPool :" + p.data.veinPool.GetLength(0));
+                            Log.LogInfo("p.data.veinPool :" + p.data.veinPool.GetLength(0));
                             int vg_count = p.data.veinPool.GetLength(0);
                             for (int i = 0; i < vg_count; i++)
                             {
@@ -133,23 +155,23 @@ namespace DysonSphereProgram.Modding.StarterTemplate
                 AdjustUnlocks();
             AdjustTechHashCosts(Configs.AdjustTechCosts, Configs.TechCostMultiple);
 
-            //int tech_count = LDB.techs.dataArray.Length;
-            //for (int i = 0; i < tech_count; i++)
-            //{
-            //    Logger.LogInfo(
-            //        LDB.techs.dataArray[i].ID.ToString() +
-            //        " HashNeeded: " + LDB.techs.dataArray[i].HashNeeded.ToString() +
-            //        " ItemPoints: " + Print(LDB.techs.dataArray[i].ItemPoints) +
-            //        " Items: " + Print(LDB.techs.dataArray[i].Items) +
-            //        " Level: " + LDB.techs.dataArray[i].Level +
-            //        " LevelCoef1: " + LDB.techs.dataArray[i].LevelCoef1 +
-            //        " LevelCoef2: " + LDB.techs.dataArray[i].LevelCoef2 +
-            //        " MaxLevel: " + LDB.techs.dataArray[i].MaxLevel +
-            //        " UnlockRecipes: " + Print(LDB.techs.dataArray[i].UnlockRecipes) +
-            //        " UnlockValues: " + Print(LDB.techs.dataArray[i].UnlockValues) +
-            //        " UnlockFunctions: " + Print(LDB.techs.dataArray[i].UnlockFunctions)
-            //        ); ;
-            //}
+            int tech_count = LDB.techs.dataArray.Length;
+            for (int i = 0; i < tech_count; i++)
+            {
+                Logger.LogInfo(
+                    LDB.techs.dataArray[i].ID.ToString() +
+                    " HashNeeded: " + LDB.techs.dataArray[i].HashNeeded.ToString() +
+                    " ItemPoints: " + Print(LDB.techs.dataArray[i].ItemPoints) +
+                    " Items: " + Print(LDB.techs.dataArray[i].Items) +
+                    " Level: " + LDB.techs.dataArray[i].Level +
+                    " LevelCoef1: " + LDB.techs.dataArray[i].LevelCoef1 +
+                    " LevelCoef2: " + LDB.techs.dataArray[i].LevelCoef2 +
+                    " MaxLevel: " + LDB.techs.dataArray[i].MaxLevel +
+                    " UnlockRecipes: " + Print(LDB.techs.dataArray[i].UnlockRecipes) +
+                    " UnlockValues: " + Print(LDB.techs.dataArray[i].UnlockValues) +
+                    " UnlockFunctions: " + Print(LDB.techs.dataArray[i].UnlockFunctions)
+                    ); ;
+            }
         }
 
         private void AdjustUnlocks()
@@ -239,67 +261,32 @@ namespace DysonSphereProgram.Modding.StarterTemplate
                 }
 
             }
-            // Adjust vessel speed with unlocks.
+            // Adjust bonus values for tech function unlocks
+            Logger.LogInfo("Adjusting unlock bonus values:" + unlocks_bonus_data.GetLength(0).ToString());
+            for (int bonus_id = 0; bonus_id < unlocks_bonus_data.GetLength(0); bonus_id++)
             {
-                for (int tech_id = 3403; tech_id <= 3405; tech_id++)
+                int tech_id;
+                bool r1 = LDB.techs.dataIndices.TryGetValue((int)unlocks_bonus_data[bonus_id, 0], out tech_id);
+                if (r1)
                 {
-                    int logi_tech;
-                    bool r1 = LDB.techs.dataIndices.TryGetValue(tech_id, out logi_tech);
-                    if (r1)
+                    int pos = -1;
+                    for (int i = 0; i < LDB.techs.dataArray[tech_id].UnlockFunctions.Length; i++)
                     {
-                        int pos = -1;
-                        for (int i = 0; i < LDB.techs.dataArray[logi_tech].UnlockFunctions.Length; i++)
-                        {
-                            if (LDB.techs.dataArray[logi_tech].UnlockFunctions[i] == 16) { pos = i; break; }
-                        }
-                        if (pos != -1)
-                        {
-                            LDB.techs.dataArray[logi_tech].UnlockValues[pos]*=10;
-                        }
-                        else
-                        {
-                            Logger.LogInfo("Failed to find vessel speed function to adjust");
-                        }
+                        if (LDB.techs.dataArray[tech_id].UnlockFunctions[i] == unlocks_bonus_data[bonus_id, 1]) { pos = i; break; }
+                    }
+                    if (pos != -1)
+                    {
+                        LDB.techs.dataArray[tech_id].UnlockValues[pos] *= unlocks_bonus_data[bonus_id, 2];
                     }
                     else
                     {
-                        Logger.LogInfo("Failed find Logistics Carrier Engine tech while adjusting vessel speed");
+                        Logger.LogInfo("Failed to find UnlockFunction " + ((int)unlocks_bonus_data[bonus_id, 1]).ToString() + " in tech " + ((int)unlocks_bonus_data[bonus_id, 0]).ToString() + " to adjust");
                     }
                 }
-
-            }
-            // Adjust vessel capacity with unlocks.
-            {
-                for (int tech_id = 3503; tech_id <= 3508; tech_id++)
+                else
                 {
-                    if (tech_id == 3505) continue;
-                    if (tech_id == 3506) continue;
-                    int logi_tech;
-                    bool r1 = LDB.techs.dataIndices.TryGetValue(tech_id, out logi_tech);
-                    if (r1)
-                    {
-                        int pos = -1;
-                        for (int i = 0; i < LDB.techs.dataArray[logi_tech].UnlockFunctions.Length; i++)
-                        {
-                            if (LDB.techs.dataArray[logi_tech].UnlockFunctions[i] == 19) { pos = i; break; }
-                        }
-                        if (pos != -1)
-                        {
-                            double m = 2;
-                            if (tech_id > 3506) m = 0.5;
-                            LDB.techs.dataArray[logi_tech].UnlockValues[pos] *= m;
-                        }
-                        else
-                        {
-                            Logger.LogInfo("Failed to find vessel capacity function to adjust");
-                        }
-                    }
-                    else
-                    {
-                        Logger.LogInfo("Failed find Logistics Carrier Capacity tech while adjusting vessel capacity");
-                    }
+                    Logger.LogInfo("Failed find tech: " + unlocks_bonus_data[bonus_id, 0].ToString());
                 }
-
             }
 
             // Move advanced receipes
@@ -405,6 +392,39 @@ namespace DysonSphereProgram.Modding.StarterTemplate
                 {1133, 1305, 62 }, //Adv crystal silicon to quantumn chem plant
                 {1403, 1304, 61 }, //Adv diamonds to adv mining machine
                 {1131, 1304, 32 } //Adv graphene to adv mining machine
+            };
+
+        // {tech_id, unlock_id, scale}
+        private static readonly float[,] unlocks_bonus_data = {
+                {3403, 16, 10 }, //3000m/s vessel speed at logi level 3
+                {3404, 16, 10 }, //3000m/s vessel speed at logi level 4
+                {3503, 19, 2 }, //200 vessel capacity at logi level 3
+                {3504, 19, 2 }, //200 vessel capacity at logi level 4
+                {3507, 19, 0.5f }, //100 vessel capacity at logi level 7
+                {3508, 19, 0.5f }, //100 vessel capacity at logi level 8
+                {3601, 20, 0.95f }, //-10.7% mineral consumption at VU level 1
+                {3601, 21, 2.0f }, //20% mining speed at VU level 1
+                {3602, 20, 0.95f }, //-10.7% mineral consumption at VU level 2
+                {3602, 21, 2.0f }, //20% mining speed at VU level 2
+                {3603, 20, 0.95f }, //-10.7% mineral consumption at VU level 3
+                {3603, 21, 2.0f }, //20% mining speed at VU level 3
+                {2102, 6, 2.0f }, //2X more core energy at core level 2
+                {2103, 6, 2.0f }, //2X more core energy at core level 3
+                {2104, 6, 2.0f }, //2X more core energy at core level 4
+                {2202, 3, 2.0f }, //2m/s speed at level 2
+                {2203, 3, 2.0f }, //2m/s speed at level 3
+                {2204, 3, 2.0f }, //2m/s speed at level 4
+                {2401, 1, 2.0f }, //+2 drones level 1
+                {2402, 1, 2.0f }, //+4 drones level 2
+                {2403, 9, 2.0f }, //+2 drone tasks level 3
+                {2404, 1, 2.0f }, //+6 drones level 4
+                {2501, 2, 2.0f }, //400kw core energy at level 1
+                {2502, 2, 3.0f }, //600kw core energy at level 2
+                {2503, 2, 3.0f }, //600kw core energy at level 3
+                {2504, 2, 3.0f }, //600kw core energy at level 4
+                {2602, 10, 2.0f }, //4m/s drone speed level 2
+                {2603, 10, 2.0f }, //4m/s drone speed level 3
+                {2604, 10, 2.0f }, //6m/s drone speed level 4
             };
 
         // how to make this a dictionary from the start?

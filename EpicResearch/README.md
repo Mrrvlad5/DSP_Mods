@@ -18,11 +18,12 @@ bool AdjustTechUnlocks = true
     - Adv casmir crystal are moved to plane smelter tech that requires green.
     - Adv photon combiner are moved to quantumn printing tech that requires purple.
     - Adv nanotubes, Adv crystal silicon are moved to quantumn chem plant tech that requires green.
-    - Adv diamonds is moved to adv mining machine tech.
-    - Adv graphene is moved to gravity matrix tech.
+    - Adv diamonds and graphene receips are moved to adv mining machine tech.
 - Add 6 degree of sphere stress allowance when Gravity Lenses are availble (Gravity Wave refraction).
 - At levels 3-5, the speed of Vessels is improved by 3000m/s.
 - Vessel capacity is increased faster at levels 3-4.
+- Increased bonuses to mecha core capacity and recharge, mecha speed, drone speed and count, Vein Utilization that are gained at early upgrades levels by 2-3X to help manage larger-scale factories.
+
 
 bool  AdjustTechCosts = true
 - Signifficantly change technology costs. These changes include:
@@ -46,6 +47,9 @@ Disable ability to "cursor carry" unlimitted amount of resources in cursor durin
 Reach out to mrrvlad#0925 on discord / official DSP server.
 
 ## Changelog
+- v0.3.1
+    - Increased bonuses to mecha core capacity and recharge, mecha speed, drone speed and count, Vein Utilization that are gained at early upgrades levels by 2-3X to help managing larger-scale factories.
+
 - v0.3.0
 	- Tech cost balancing pass - should be playable at minimal resources.
     - Increased logistic speed bonus from 1500 to 3000 for level 3 to 5.
@@ -53,7 +57,7 @@ Reach out to mrrvlad#0925 on discord / official DSP server.
 
 - v0.2.0
 	- Added ability to specify planet resource multipler. Applied after game's resource multipler. Affects all ores, gas giants, oil. Remote oil is affected as a sqrt of this value.
-    - Signifficantle reduce pre-automation research requirements.
+    - Signifficantly reduce pre-automation research requirements.
 
 - v0.1.1
 	- WIP. Initial version. (Game Version 0.9.27.15466)
