@@ -34,7 +34,7 @@ int TechCostMultiple = 100
 - Apply additional multiplier to hash and cube costs of technologies. Valid values are: {1, 5, 20, 50, 100}.
 
 float ResourceMultiple = 1
-- Additional resource multipler for the galaxy. Affects all ore, gas giants, oil. Remote oil is affected as a sqrt of this value.
+- Additional resource multipler for the galaxy. Affects all ore, gas giants, oil. Oil is affected by sqrt of this value.
 
 ## Installation Note
 This mod depends on BepInEx.
@@ -47,8 +47,11 @@ Disable ability to "cursor carry" unlimitted amount of resources in cursor durin
 Reach out to mrrvlad#0925 on discord / official DSP server.
 
 ## Changelog
+- v0.3.2
+    - All oil reserves, including starter planet, are now affected by sqrt of resource multipler.
+
 - v0.3.1
-    - Increased bonuses to mecha core capacity and recharge, mecha speed, drone speed and count, Vein Utilization that are gained at early upgrades levels by 2-3X to help managing larger-scale factories.
+    - Increased bonuses to mecha core capacity and recharge, mecha speed, drone speed and count, Vein Utilization that are gained at early upgrades levels by 2-3X to help manage larger-scale factories.
 
 - v0.3.0
 	- Tech cost balancing pass - should be playable at minimal resources.

@@ -19,7 +19,7 @@ namespace DysonSphereProgram.Modding.StarterTemplate
     {
         public const string GUID = "mrrvlad.epic.research";
         public const string NAME = "EpicResearch";
-        public const string VERSION = "0.3.1";
+        public const string VERSION = "0.3.2";
 
         private Harmony _harmony;
         internal static ManualLogSource Log;
@@ -76,11 +76,11 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             Log.LogInfo("GameMain_Begin_Postfix called at gameTick: " + GameMain.gameTick.ToString() + " , resource multiple: " + Configs.ResourceMultiple.ToString());
             foreach (StarData s in GameMain.data.galaxy.stars)
             {
-                Log.LogInfo("StarName:" + s.name + " resource koef: " + s.resourceCoef.ToString());
+//                Log.LogInfo("StarName:" + s.name + " resource koef: " + s.resourceCoef.ToString());
                 s.resourceCoef *= Configs.ResourceMultiple;
                 foreach (PlanetData p in s.planets)
                 {
-                    Log.LogInfo("PlanetName:" + p.name);
+//                    Log.LogInfo("PlanetName:" + p.name);
                     if (p.gasSpeeds != null)
                         for (int gs_id = 0; gs_id < p.gasSpeeds.GetLength(0); gs_id++)
                         {
@@ -90,7 +90,7 @@ namespace DysonSphereProgram.Modding.StarterTemplate
                     {
                         if (p.runtimeVeinGroups != null && p.factory == null)
                         {
-                            Log.LogInfo("p.runtimeVeinGroups :" + p.runtimeVeinGroups.GetLength(0));
+//                            Log.LogInfo("p.runtimeVeinGroups :" + p.runtimeVeinGroups.GetLength(0));
                             int vg_count = p.runtimeVeinGroups.GetLength(0);
                             for (int i = 0; i < vg_count; i++)
                             {
@@ -102,21 +102,36 @@ namespace DysonSphereProgram.Modding.StarterTemplate
 
                         if (p.factory != null && p.factory.veinPool != null)
                         {
-                            Log.LogInfo("p.factory.veinPool :" + p.factory.veinPool.GetLength(0));
+//                            Log.LogInfo("p.factory.veinPool :" + p.factory.veinPool.GetLength(0));
                             int vg_count = p.factory.veinPool.GetLength(0);
                             for (int i = 0; i < vg_count; i++)
                             {
-                                p.factory.veinPool[i].amount = (int)(Configs.ResourceMultiple * p.factory.veinPool[i].amount);
+                                if (p.factory.veinPool[i].type == EVeinType.Oil)
+                                {
+                                    p.factory.veinPool[i].amount = (int)(System.Math.Sqrt(Configs.ResourceMultiple + 1e-8) * (double)p.factory.veinPool[i].amount);
+                                }
+                                else
+                                {
+                                    p.factory.veinPool[i].amount = (int)(Configs.ResourceMultiple * p.factory.veinPool[i].amount);
+
+                                }
                             }
                             p.factory.RecalculateAllVeinGroups();
                         }
                         if (p.data != null && p.data.veinPool != null)
                         {
-                            Log.LogInfo("p.data.veinPool :" + p.data.veinPool.GetLength(0));
+//                            Log.LogInfo("p.data.veinPool :" + p.data.veinPool.GetLength(0));
                             int vg_count = p.data.veinPool.GetLength(0);
                             for (int i = 0; i < vg_count; i++)
                             {
-                                p.data.veinPool[i].amount = (int)(Configs.ResourceMultiple * p.data.veinPool[i].amount);
+                                if (p.data.veinPool[i].type == EVeinType.Oil)
+                                {
+                                    p.data.veinPool[i].amount = (int)(System.Math.Sqrt(Configs.ResourceMultiple + 1e-8) * (double)p.data.veinPool[i].amount);
+                                }
+                                else
+                                {
+                                    p.data.veinPool[i].amount = (int)(Configs.ResourceMultiple * p.data.veinPool[i].amount);
+                                }
                             }
                         }
                     }
@@ -155,23 +170,23 @@ namespace DysonSphereProgram.Modding.StarterTemplate
                 AdjustUnlocks();
             AdjustTechHashCosts(Configs.AdjustTechCosts, Configs.TechCostMultiple);
 
-            int tech_count = LDB.techs.dataArray.Length;
-            for (int i = 0; i < tech_count; i++)
-            {
-                Logger.LogInfo(
-                    LDB.techs.dataArray[i].ID.ToString() +
-                    " HashNeeded: " + LDB.techs.dataArray[i].HashNeeded.ToString() +
-                    " ItemPoints: " + Print(LDB.techs.dataArray[i].ItemPoints) +
-                    " Items: " + Print(LDB.techs.dataArray[i].Items) +
-                    " Level: " + LDB.techs.dataArray[i].Level +
-                    " LevelCoef1: " + LDB.techs.dataArray[i].LevelCoef1 +
-                    " LevelCoef2: " + LDB.techs.dataArray[i].LevelCoef2 +
-                    " MaxLevel: " + LDB.techs.dataArray[i].MaxLevel +
-                    " UnlockRecipes: " + Print(LDB.techs.dataArray[i].UnlockRecipes) +
-                    " UnlockValues: " + Print(LDB.techs.dataArray[i].UnlockValues) +
-                    " UnlockFunctions: " + Print(LDB.techs.dataArray[i].UnlockFunctions)
-                    ); ;
-            }
+            //int tech_count = LDB.techs.dataArray.Length;
+            //for (int i = 0; i < tech_count; i++)
+            //{
+            //    Logger.LogInfo(
+            //        LDB.techs.dataArray[i].ID.ToString() +
+            //        " HashNeeded: " + LDB.techs.dataArray[i].HashNeeded.ToString() +
+            //        " ItemPoints: " + Print(LDB.techs.dataArray[i].ItemPoints) +
+            //        " Items: " + Print(LDB.techs.dataArray[i].Items) +
+            //        " Level: " + LDB.techs.dataArray[i].Level +
+            //        " LevelCoef1: " + LDB.techs.dataArray[i].LevelCoef1 +
+            //        " LevelCoef2: " + LDB.techs.dataArray[i].LevelCoef2 +
+            //        " MaxLevel: " + LDB.techs.dataArray[i].MaxLevel +
+            //        " UnlockRecipes: " + Print(LDB.techs.dataArray[i].UnlockRecipes) +
+            //        " UnlockValues: " + Print(LDB.techs.dataArray[i].UnlockValues) +
+            //        " UnlockFunctions: " + Print(LDB.techs.dataArray[i].UnlockFunctions)
+            //        ); ;
+            //}
         }
 
         private void AdjustUnlocks()

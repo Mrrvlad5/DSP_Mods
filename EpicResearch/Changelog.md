@@ -1,5 +1,8 @@
+- v0.3.2
+    - All oil reserves, including starter planet, are now affected by sqrt of resource multipler.
+
 - v0.3.1
-    - Increased bonuses to mecha core capacity and recharge, mecha speed, drone speed and count, Vein Utilization gained at early upgrades levels by 2-3X to help managing larger-scale factories.
+    - Increased bonuses to mecha core capacity and recharge, mecha speed, drone speed and count, Vein Utilization gained at early upgrades levels by 2-3X to help manage larger-scale factories.
 
 - v0.3.0
     - Tech cost balancing pass - should be playable at minimal resources.
