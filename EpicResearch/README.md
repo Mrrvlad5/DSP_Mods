@@ -47,6 +47,9 @@ Disable ability to "cursor carry" unlimitted amount of resources in cursor durin
 Reach out to mrrvlad#0925 on discord / official DSP server.
 
 ## Changelog
+- v0.3.3
+    - QOL changes to the pre-automation game.
+
 - v0.3.2
     - All oil reserves, including starter planet, are now affected by sqrt of resource multipler.
 

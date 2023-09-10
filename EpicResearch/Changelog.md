@@ -1,3 +1,6 @@
+- v0.3.3
+    - QOL changes to the pre-automation game.
+
 - v0.3.2
     - All oil reserves, including starter planet, are now affected by sqrt of resource multipler.
 
