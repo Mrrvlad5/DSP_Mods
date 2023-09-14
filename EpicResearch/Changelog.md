@@ -1,3 +1,10 @@
+- v0.3.4
+    - First pass for yellow tech balancing. 
+    - Allow basic Dyson Frame construction at late-yellow tech.
+    - Improve Sail lifetime signifficantly.
+    - Removed dependency of Qchip on Information Matrix.
+    - Deuteron Rods are now availble with Particle Collider tech.
+
 - v0.3.3
     - QOL changes to the pre-automation game.
 

@@ -2,7 +2,7 @@
   "namespace": "Mrrvlad",
   "name": "EpicResearch",
   "description": "Modifies research requirements for a slower game progression.",
-  "version_number": "0.3.3",
+  "version_number": "0.3.4",
   "dependencies": [
     "xiaoye97-BepInEx-5.4.17",
     "xiaoye97-LDBTool-2.0.6"
