@@ -1,3 +1,6 @@
+- v0.3.5
+    - Minor balancing tweaks.
+
 - v0.3.4
     - First pass for yellow tech balancing. 
     - Allow basic Dyson Frame construction at late-yellow tech.
