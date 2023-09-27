@@ -1,3 +1,6 @@
+- v0.3.6
+    - Yellow balancing tweaks.
+
 - v0.3.5
     - Minor balancing tweaks.
 
