@@ -1,3 +1,7 @@
+- v0.3.8
+    - Removed logi speed 4 dependence on drive engine 4.
+    - Yellow-Purple balancing tweaks: logi speed bonus, availability of advanced receipts. 
+
 - v0.3.6
     - Yellow balancing tweaks.
 

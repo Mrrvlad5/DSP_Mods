@@ -13,14 +13,9 @@ Modifies research requirements for a slower game progression.
 bool AdjustTechUnlocks = true
 
 - Change Logistic Warp to be availble at level 6 (instead of 4).
-- Move rare receips to be available further in the tech tree:
-    - Adv warper, Adv particle container are moved to mission complete tech. 
-    - Adv casmir crystal are moved to plane smelter tech that requires green.
-    - Adv photon combiner are moved to quantumn printing tech that requires purple.
-    - Adv nanotubes, Adv crystal silicon are moved to quantumn chem plant tech that requires green.
-    - Adv diamonds and graphene receips are moved to adv mining machine tech.
+- Move rare receipts to be available further in the tech tree.
 - Add 6 degree of sphere stress allowance when Gravity Lenses are availble (Gravity Wave refraction).
-- At levels 3-5, the speed of Vessels is improved by 3000m/s.
+- At levels 3-5, the speed of Vessels is greately improved.
 - Vessel capacity is increased faster at levels 3-4.
 - Increased bonuses to mecha core capacity and recharge, mecha speed, drone speed and count, Vein Utilization that are gained at early upgrades levels by 2-3X to help manage larger-scale factories.
 
@@ -47,6 +42,10 @@ Disable ability to "cursor carry" unlimitted amount of resources in cursor durin
 Reach out to mrrvlad#0925 on discord / official DSP server.
 
 ## Changelog
+- v0.3.8
+    - Removed logi speed 4 dependence on drive engine 4.
+    - Yellow balancing tweaks: logi speed bonus, availability of advanced receipts. 
+
 - v0.3.6
     - Yellow balancing tweaks.
 
