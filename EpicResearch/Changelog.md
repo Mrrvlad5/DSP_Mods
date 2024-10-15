@@ -1,3 +1,6 @@
+- v0.4.0
+    - Adjusted early game tech costs to survive max Fog difficulty.
+
 - v0.3.8
     - Removed logi speed 4 dependence on drive engine 4.
     - Yellow-Purple balancing tweaks: logi speed bonus, availability of advanced receipts. 

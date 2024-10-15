@@ -2,6 +2,12 @@
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using System;
+using System.Drawing;
+using System.Security.Cryptography;
+using UnityEngine;
+using static SimplexNoise;
+using static UnityEngine.UI.GridLayoutGroup;
 
 namespace DysonSphereProgram.Modding.StarterTemplate
 {
@@ -19,7 +25,9 @@ namespace DysonSphereProgram.Modding.StarterTemplate
     {
         public const string GUID = "mrrvlad.epic.research";
         public const string NAME = "EpicResearch";
-        public const string VERSION = "0.3.8";
+        public const string VERSION = "0.4.0";
+
+        private static bool scanned = false;
 
         private Harmony _harmony;
         internal static ManualLogSource Log;
@@ -55,11 +63,11 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             Log.LogInfo("GameMain_Begin_Postfix called at gameTick: " + GameMain.gameTick.ToString() + " , resource multiple: " + Configs.ResourceMultiple.ToString());
             foreach (StarData s in GameMain.data.galaxy.stars)
             {
-//                Log.LogInfo("StarName:" + s.name + " resource koef: " + s.resourceCoef.ToString());
+                //                Log.LogInfo("StarName:" + s.name + " resource koef: " + s.resourceCoef.ToString());
                 s.resourceCoef *= Configs.ResourceMultiple;
                 foreach (PlanetData p in s.planets)
                 {
-//                    Log.LogInfo("PlanetName:" + p.name);
+                    //                    Log.LogInfo("PlanetName:" + p.name);
                     if (p.gasSpeeds != null)
                         for (int gs_id = 0; gs_id < p.gasSpeeds.GetLength(0); gs_id++)
                         {
@@ -69,7 +77,7 @@ namespace DysonSphereProgram.Modding.StarterTemplate
                     {
                         if (p.runtimeVeinGroups != null && p.factory == null)
                         {
-//                            Log.LogInfo("p.runtimeVeinGroups :" + p.runtimeVeinGroups.GetLength(0));
+                            //                            Log.LogInfo("p.runtimeVeinGroups :" + p.runtimeVeinGroups.GetLength(0));
                             int vg_count = p.runtimeVeinGroups.GetLength(0);
                             for (int i = 0; i < vg_count; i++)
                             {
@@ -81,7 +89,7 @@ namespace DysonSphereProgram.Modding.StarterTemplate
 
                         if (p.factory != null && p.factory.veinPool != null)
                         {
-//                            Log.LogInfo("p.factory.veinPool :" + p.factory.veinPool.GetLength(0));
+                            //                            Log.LogInfo("p.factory.veinPool :" + p.factory.veinPool.GetLength(0));
                             int vg_count = p.factory.veinPool.GetLength(0);
                             for (int i = 0; i < vg_count; i++)
                             {
@@ -99,7 +107,7 @@ namespace DysonSphereProgram.Modding.StarterTemplate
                         }
                         if (p.data != null && p.data.veinPool != null)
                         {
-//                            Log.LogInfo("p.data.veinPool :" + p.data.veinPool.GetLength(0));
+                            //                            Log.LogInfo("p.data.veinPool :" + p.data.veinPool.GetLength(0));
                             int vg_count = p.data.veinPool.GetLength(0);
                             for (int i = 0; i < vg_count; i++)
                             {
@@ -408,6 +416,151 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             EpicResearchPlugin.Log = null;
         }
 
+        ////seed scanner
+        //[HarmonyPostfix, HarmonyPatch(typeof(GameMain), "Begin")]
+        //public static void RunScan()
+        //{
+        //    FPSController.SetFixUPS(60.0);
+        //    //if (!scanned)
+        //    //{
+        //    //    scanned = true;
+        //    //    for (int seed = 0; seed < 100000000; seed++)
+        //    //        ScanSeed(seed);
+        //    //}
+        //}
+
+        //private static void ScanSeed(int seed)
+        //{
+        //    const float RESOURCE_MULTIPLIER = 0.1f;
+        //    const int STAR_COUNT = 1;
+
+        //    GameDesc gameDesc = new GameDesc();
+        //    gameDesc.SetForNewGame(UniverseGen.algoVersion, seed, STAR_COUNT, 1, RESOURCE_MULTIPLIER);
+        //    GalaxyData galaxy = UniverseGen.CreateGalaxy(gameDesc);
+
+        //    // this copy of the multiplier is used in generation. restore it at the end of this function
+        //    float temp = GameMain.data.gameDesc.resourceMultiplier;
+        //    GameMain.data.gameDesc.resourceMultiplier = RESOURCE_MULTIPLIER;
+
+        //    StarData star = galaxy.stars[0];
+        //    if (star.planets[0].orbitRadius < 0.5) return;
+        //    //int sat_count = 0;
+        //    int proper_type_count = 0;
+        //    foreach (PlanetData planet in star.planets)
+        //    {
+        //        //if (planet.orbitAround > 0) sat_count++;
+        //        string planetTypeName = LDB.themes.Select(planet.theme).displayName;
+        //        if (planetTypeName == "Maroonfrost") proper_type_count++;
+        //        if (planetTypeName == "Geloterra") proper_type_count++;
+        //    }
+        //    //if (sat_count > 1) return;
+        //    if (proper_type_count < 2) return;
+
+        //    long[] starterRes = new long[(int)(EVeinType.Max)];
+        //    long[] other0Res = new long[(int)(EVeinType.Max)];
+        //    long[] other1Res = new long[(int)(EVeinType.Max)];
+        //    for (int idx = 0; idx < starterRes.GetLength(0); idx++)
+        //    {
+        //        other0Res[idx] = 0;
+        //        other1Res[idx] = 0;
+        //        starterRes[idx] = 0;
+        //    }
+        //    string planetTypes = "";
+
+        //    int other_id = -1;
+
+        //    foreach (PlanetData planet in star.planets)
+        //    {
+
+        //        string planetTypeName = LDB.themes.Select(planet.theme).displayName;
+        //        planetTypeName += planet.orbitAround.ToString();
+        //        planetTypes += planetTypeName;
+        //        planetTypes += ",";
+        //        planetTypes += planet.orbitRadius.ToString() + ",";
+        //        planetTypes += planet.windStrength.ToString() + ",";
+
+        //        if (planet.type == EPlanetType.Gas)
+        //        {
+        //            planetTypes += planet.landPercent.ToString() + ","; 
+        //            continue;
+        //        }
+
+        //        GeneratePlanetData(planet);
+        //        planetTypes += planet.landPercent.ToString() + ",";
+        //        if (!planetTypeName.StartsWith("Mariterra"))
+        //            other_id++;
+
+        //        // note that the DSP code frequently uses the first element of arrays as a null entry
+        //        for (int i = 1; i < planet.veinGroups.Length; i++)
+        //        {
+        //            ref VeinGroup veinGroup = ref planet.veinGroups[i];
+        //            int type_id = (int)veinGroup.type;
+        //            if (planetTypeName.StartsWith("Mariterra"))
+        //                starterRes[type_id] += veinGroup.amount;
+        //            else
+        //            {
+        //                if (other_id == 0)
+        //                    other0Res[type_id] += veinGroup.amount;
+        //                else
+        //                    other1Res[type_id] += veinGroup.amount;
+        //            }
+        //        }
+
+        //        planet.Unload();
+        //    }
+
+        //    if (
+        //        (starterRes[(int)EVeinType.Copper] > 190000) &&
+        //        (starterRes[(int)EVeinType.Iron] > 300000)
+        //        )
+        //    {
+        //        // generate resource string
+        //        string starterResString = "";
+        //        for (int idx = 1; idx < 8; idx++) starterResString += starterRes[idx].ToString() + ",";
+        //        string other0ResString = "";
+        //        for (int idx = 1; idx < 9; idx++) other0ResString += other0Res[idx].ToString() + ",";
+        //        string other1ResString = "";
+        //        for (int idx = 1; idx < 9; idx++) other1ResString += other1Res[idx].ToString() + ",";
+
+        //        Log.LogInfo(seed.ToString("D8") + "," + starterResString + other0ResString + other1ResString + planetTypes);
+        //    }
+        //    GameMain.data.gameDesc.resourceMultiplier = temp;
+        //}
+
+        //private static void GeneratePlanetData(PlanetData planet)
+        //{
+        //    if (planet.calculated)
+        //        return;
+
+        //    // taken from PlanetModelingManager.PlanetCalculateThreadMain()
+        //    PlanetAlgorithm planetAlgorithm = PlanetModelingManager.Algorithm(planet);
+        //    planet.data = new PlanetRawData(planet.precision);
+        //    planet.modData = planet.data.InitModData(planet.modData);
+        //    planet.data.CalcVerts();
+        //    planet.aux = new PlanetAuxData(planet);
+        //    planetAlgorithm.GenerateTerrain(planet.mod_x, planet.mod_y);
+        //    //planetAlgorithm.CalcWaterPercent();
+        //    planet.data.vegeCursor = 1;
+        //    // vein generation doesn't consider collision with vegetables (i.e. rocks, trees, etc.)
+        //    /*if (planet.type != EPlanetType.Gas)
+        //        planetAlgorithm.GenerateVegetables();*/
+        //    planet.data.veinCursor = 1;
+        //    if (planet.type != EPlanetType.Gas)
+        //        planetAlgorithm.GenerateVeins();
+        //    planet.CalculateVeinGroups();
+        //    //planet.GenBirthPoints();
+        //    planet.NotifyCalculated();
+        //}
+
+
+
+
+
+
+
+
+
+
         // {tech_id, prev_tech_id}
         private static readonly int[,] remove_dependencies_data = {
                 {1303, 1312}, //Qchip on Information Matrix
@@ -482,20 +635,20 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             tech_data[1201] = new int[] { 2400, 10, 30, 30, -1, -1, -1, -1, 1101, 1104, 6003, 6004, 6005, 6006 };
             tech_data[1120] = new int[] { 9000, 100, 20, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1101] = new int[] { 9000, 100, 20, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[1701] = new int[] { 9000, 100, 20, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[1701] = new int[] { 9000, 40, 40, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1602] = new int[] { 18000, 50, 20, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[1411] = new int[] { 21600, 100, 15, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[1402] = new int[] { 18000, 100, 20, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[1412] = new int[] { 36000, 100, 20, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[1411] = new int[] { 3600, 2, 100, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[1402] = new int[] { 7200, 100, 30, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[1412] = new int[] { 9000, 100, 40, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1102] = new int[] { 36000, 100, 6, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1151] = new int[] { 36000, 100, 5, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1415] = new int[] { 72000, 100, 2, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1403] = new int[] { 90000, 100, -1, 20, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1501] = new int[] { 18000, 100, 40, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[1311] = new int[] { 18000, 100, 20, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[1311] = new int[] { 18000, 2, 20, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1134] = new int[] { 36000, 100, 20, 30, 10, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1121] = new int[] { 72000, 100, 10, 10, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[1111] = new int[] { 144000, 100, 8, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[1111] = new int[] { 180000, 100, 10, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1702] = new int[] { 180000, 100, 8, 2, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1603] = new int[] { 72000, 100, 20, 5, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1608] = new int[] { 108000, 100, 16, 8, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
@@ -534,23 +687,23 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             tech_data[1153] = new int[] { 2160000, 100, 3, 1, 1, 1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1712] = new int[] { 360000, 100, 2, 8, 4, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1606] = new int[] { 432000, 100, 10, 8, 2, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[1312] = new int[] { 1440000, 250, 6, 2, 5, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[1312] = new int[] { 1440000, 250, 6, 2, 6, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1141] = new int[] { 216000, 100, 15, 10, 5, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1143] = new int[] { 720000, 100, 8, 1, 2, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1522] = new int[] { 360000, 100, 10, 2, 4, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1303] = new int[] { 720000, 100, 8, 1, 2, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[1417] = new int[] { 1080000, 100, 14, 2, 4, -1, 6, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[1417] = new int[] { 1080000, 100, 12, 2, 4, -1, 2, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1704] = new int[] { 900000, 100, 6, 2, 2, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1523] = new int[] { 1800000, 100, 5, 1, 2, 3, 3, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1505] = new int[] { 3600000, 100, 6, 1, 1, 2, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1203] = new int[] { 1620000, 100, 5, 2, 2, 2, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[1304] = new int[] { 720000, 100, 15, 2, 4, 6, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[1305] = new int[] { 720000, 100, 12, 2, 4, 8, 5, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[1705] = new int[] { 9000000, 50, 6, 1, 3, 6, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[1304] = new int[] { 720000, 100, 15, 2, 8, 6, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[1305] = new int[] { 720000, 100, 10, 2, 4, 3, 2, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[1705] = new int[] { 9000000, 50, 6, 1, 4, 6, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1506] = new int[] { 1080000, 100, 15, 1, 5, 5, 5, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1145] = new int[] { 900000, 100, 18, 2, 6, 4, 8, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1144] = new int[] { 1440000, 100, 10, 1, 4, 4, 4, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[1507] = new int[] { 18000000, 50, 6, 1, 4, 2, 4, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[1507] = new int[] { 18000000, 50, 6, 1, 3, 3, 4, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1508] = new int[] { 72000000, 50, -1, -1, -1, -1, -1, 1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[4101] = new int[] { 1800, 10, 20, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[4102] = new int[] { 36000, 10, 20, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
@@ -590,7 +743,7 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             tech_data[2502] = new int[] { 72000, 50, 2, 20, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2503] = new int[] { 216000, 20, 20, 12, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2504] = new int[] { 600000, 100, 12, -1, 3, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[2505] = new int[] { 2700000, 100, 4, -1, -1, -1, 4, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[2505] = new int[] { 2700000, 100, 4, -1, -1, -1, 1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2601] = new int[] { 18000, 5, 12, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2602] = new int[] { 72000, 10, 6, 16, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2603] = new int[] { 144000, 20, 20, 20, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
@@ -600,26 +753,26 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             tech_data[2902] = new int[] { 36000, 100, 5, 20, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2903] = new int[] { 360000, 25, 20, 10, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2904] = new int[] { 720000, 200, 4, -1, 2, 2, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[2905] = new int[] { 1080000, 100, 12, -1, -1, -1, 6, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[2905] = new int[] { 1080000, 100, 8, -1, -1, -1, 3, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3101] = new int[] { 144000, 200, 10, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3102] = new int[] { 144000, 100, 20, -1, 3, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3103] = new int[] { 144000, 100, 20, 2, 4, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3104] = new int[] { 300000, 100, 12, -1, 3, 3, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3105] = new int[] { 480000, 100, 12, 3, 3, 3, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[3106] = new int[] { 1200000, 100, 6, -1, -1, -1, 3, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[3106] = new int[] { 1200000, 100, 6, -1, -1, -1, 2, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3201] = new int[] { 54000, 100, 40, 8, 4, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3202] = new int[] { 144000, 100, 20, 4, 3, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3203] = new int[] { 180000, 100, -1, -1, 6, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3204] = new int[] { 360000, 100, -1, 10, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[3205] = new int[] { 420000, 100, 18, -1, 3, 6, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[3206] = new int[] { 480000, 100, 24, -1, 3, 3, 6, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[3207] = new int[] { 1620000, 100, 8, -1, 1, 1, 3, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[3205] = new int[] { 420000, 100, 18, -1, 3, 3, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[3206] = new int[] { 480000, 100, 24, -1, 3, 3, 3, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[3207] = new int[] { 1620000, 100, 8, -1, 1, 1, 1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3701] = new int[] { 36000, 100, -1, 30, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3702] = new int[] { 108000, 100, -1, 20, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3703] = new int[] { 360000, 100, 8, -1, 2, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3704] = new int[] { 720000, 100, 6, -1, 2, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3705] = new int[] { 900000, 100, 8, -1, 2, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[3706] = new int[] { 1200000, 100, 9, -1, -1, -1, 3, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[3706] = new int[] { 1200000, 100, 6, -1, -1, -1, 1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3301] = new int[] { 108000, 100, 4, 4, 1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3302] = new int[] { 300000, 100, 3, -1, 3, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3303] = new int[] { 720000, 100, 3, 1, 3, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
@@ -647,13 +800,24 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             tech_data[3601] = new int[] { 36000, 100, 20, 60, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3602] = new int[] { 180000, 100, 10, 2, 5, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3603] = new int[] { 540000, 100, 5, 2, 4, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[3604] = new int[] { 720000, 100, 8, 2, 3, 4, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[3605] = new int[] { 1800000, 100, 6, 1, 1, 1, 2, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[3901] = new int[] { 180000, 100, -1, -1, 12, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[3604] = new int[] { 720000, 100, 8, 2, 3, 3, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[3605] = new int[] { 1800000, 100, 5, 1, 1, 1, 1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[3901] = new int[] { 180000, 100, -1, -1, 6, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3902] = new int[] { 300000, 100, -1, -1, -1, 6, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3903] = new int[] { 900000, 100, -1, -1, -1, 6, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
 
-
+            // Gauss Turret
+            tech_data[1801] = new int[] { 1800, 2, 40, 40, -1, -1, -1, -1, 1202, 1104, 6003, 6004, 6005, 6006 };
+            // Combustible Unit
+            tech_data[1802] = new int[] { 1800, 5, 120, 120, 200, -1, -1, -1, 1030, 1006, 1104, 6004, 6005, 6006 };
+            // BAB
+            tech_data[1826] = new int[] { 3600, 2, 100, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            // Engine
+            tech_data[1805] = new int[] { 1800, 10, 40, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            // Missiles
+            tech_data[1806] = new int[] { 9000, 10, 20, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            // Signal Tower
+            tech_data[1808] = new int[] { 72000, 100, 20, 20, 5, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
         }
     }
 }

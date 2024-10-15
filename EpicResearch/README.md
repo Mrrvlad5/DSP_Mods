@@ -8,6 +8,7 @@ Modifies research requirements for a slower game progression.
     - it is expected to run out or resources and having to move systems several times before unlocking warp and logistic warp.
     - it is expected to have a pre-warp logistics between systems at yellow and purple tech.
 - Allows to specify additional resource multipler.
+- Playable with Fog set to max difficulty.
 
 ## Configuration
 bool AdjustTechUnlocks = true
@@ -33,15 +34,15 @@ float ResourceMultiple = 1
 
 ## Installation Note
 This mod depends on BepInEx.
-
-## Dev Plans
-Play-testing to validate and adjust tech costs.
-Disable ability to "cursor carry" unlimitted amount of resources in cursor during warp.
+Is not compatible with the background autosave feature of BulletTime mod.
 
 ## Bug Reports, Comments, Suggestions
 Reach out to mrrvlad#0925 on discord / official DSP server.
 
 ## Changelog
+- v0.4.0
+    - Adjusted early game tech costs to survive max Fog difficulty.
+
 - v0.3.8
     - Removed logi speed 4 dependence on drive engine 4.
     - Yellow balancing tweaks: logi speed bonus, availability of advanced receipts. 
