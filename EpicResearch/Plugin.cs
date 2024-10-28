@@ -25,7 +25,7 @@ namespace DysonSphereProgram.Modding.StarterTemplate
     {
         public const string GUID = "mrrvlad.epic.research";
         public const string NAME = "EpicResearch";
-        public const string VERSION = "0.4.0";
+        public const string VERSION = "0.4.1";
 
         private static bool scanned = false;
 
@@ -390,6 +390,15 @@ namespace DysonSphereProgram.Modding.StarterTemplate
                             LDB.techs.dataArray[t].Items = LDB.techs.dataArray[t].Items.AddToArray<int>(data_patch_id[i + 2 + 6]);
                         }
                     }
+                    // Set the flag that the tech is not researched in a lab
+                    if (LDB.techs.dataArray[t].ID  == 1801)
+                    {
+                        LDB.techs.dataArray[t].IsLabTech = false;
+                    }
+                    if (LDB.techs.dataArray[t].ID == 1802)
+                    {
+                        LDB.techs.dataArray[t].IsLabTech = false;
+                    }
                 }
                 else
                 {
@@ -629,10 +638,10 @@ namespace DysonSphereProgram.Modding.StarterTemplate
         {
             tech_data = new System.Collections.Generic.Dictionary<int, int[]>();
             tech_data[1001] = new int[] { 1200, 2, 30, -1, -1, -1, -1, -1, 1202, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[1601] = new int[] { 900, 10, 80, 80, -1, -1, -1, -1, 1301, 1201, 6003, 6004, 6005, 6006 };
+            tech_data[1601] = new int[] { 1800, 5, 40, 40, -1, -1, -1, -1, 1301, 1201, 6003, 6004, 6005, 6006 };
             tech_data[1401] = new int[] { 1800, 2, 40, 40, -1, -1, -1, -1, 1202, 1301, 6003, 6004, 6005, 6006 };
             tech_data[1002] = new int[] { 1800, 10, 200, 200, -1, -1, -1, -1, 1202, 1301, 6003, 6004, 6005, 6006 };
-            tech_data[1201] = new int[] { 2400, 10, 30, 30, -1, -1, -1, -1, 1101, 1104, 6003, 6004, 6005, 6006 };
+            tech_data[1201] = new int[] { 900, 10, 40, 40, -1, -1, -1, -1, 1101, 1104, 6003, 6004, 6005, 6006 };
             tech_data[1120] = new int[] { 9000, 100, 20, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1101] = new int[] { 9000, 100, 20, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1701] = new int[] { 9000, 40, 40, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };

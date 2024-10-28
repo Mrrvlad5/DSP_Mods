@@ -40,6 +40,9 @@ Is not compatible with the background autosave feature of BulletTime mod.
 Reach out to mrrvlad#0925 on discord / official DSP server.
 
 ## Changelog
+- v0.4.1
+    - Fixed exception when researching Combustible Units and Gauss Cannons.
+
 - v0.4.0
     - Adjusted early game tech costs to survive max Fog difficulty.
 

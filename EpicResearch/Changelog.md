@@ -1,3 +1,6 @@
+- v0.4.1
+    - Fixed exception when researching Combustible Units and Gauss Cannons.
+
 - v0.4.0
     - Adjusted early game tech costs to survive max Fog difficulty.
 
