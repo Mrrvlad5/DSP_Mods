@@ -25,7 +25,7 @@ namespace DysonSphereProgram.Modding.StarterTemplate
     {
         public const string GUID = "mrrvlad.epic.research";
         public const string NAME = "EpicResearch";
-        public const string VERSION = "0.4.1";
+        public const string VERSION = "0.4.2";
 
         private static bool scanned = false;
 
@@ -156,26 +156,27 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             if (Configs.AdjustTechUnlocks)
                 AdjustUnlocks();
             AdjustTechHashCosts(Configs.AdjustTechCosts, Configs.TechCostMultiple);
+            AdjustBombDamage();
 
-            //int tech_count = LDB.techs.dataArray.Length;
-            //for (int i = 0; i < tech_count; i++)
-            //{
-            //    Logger.LogInfo(
-            //        LDB.techs.dataArray[i].ID.ToString() +
-            //        " HashNeeded: " + LDB.techs.dataArray[i].HashNeeded.ToString() +
-            //        " ItemPoints: " + Print(LDB.techs.dataArray[i].ItemPoints) +
-            //        " Items: " + Print(LDB.techs.dataArray[i].Items) +
-            //        " Level: " + LDB.techs.dataArray[i].Level +
-            //        " LevelCoef1: " + LDB.techs.dataArray[i].LevelCoef1 +
-            //        " LevelCoef2: " + LDB.techs.dataArray[i].LevelCoef2 +
-            //        " MaxLevel: " + LDB.techs.dataArray[i].MaxLevel +
-            //        " PreTechs: " + Print(LDB.techs.dataArray[i].PreTechs) +
-            //        " PreTechsImplicit: " + Print(LDB.techs.dataArray[i].PreTechsImplicit) +
-            //        " UnlockRecipes: " + Print(LDB.techs.dataArray[i].UnlockRecipes) +
-            //        " UnlockValues: " + Print(LDB.techs.dataArray[i].UnlockValues) +
-            //        " UnlockFunctions: " + Print(LDB.techs.dataArray[i].UnlockFunctions)
-            //        ); ;
-            //}
+        //    int tech_count = LDB.techs.dataArray.Length;
+        //    for (int i = 0; i < tech_count; i++)
+        //    {
+        //        Logger.LogInfo(
+        //            LDB.techs.dataArray[i].ID.ToString() +
+        //            " HashNeeded: " + LDB.techs.dataArray[i].HashNeeded.ToString() +
+        //            " ItemPoints: " + Print(LDB.techs.dataArray[i].ItemPoints) +
+        //            " Items: " + Print(LDB.techs.dataArray[i].Items) +
+        //            " Level: " + LDB.techs.dataArray[i].Level +
+        //            " LevelCoef1: " + LDB.techs.dataArray[i].LevelCoef1 +
+        //            " LevelCoef2: " + LDB.techs.dataArray[i].LevelCoef2 +
+        //            " MaxLevel: " + LDB.techs.dataArray[i].MaxLevel +
+        //            " PreTechs: " + Print(LDB.techs.dataArray[i].PreTechs) +
+        //            " PreTechsImplicit: " + Print(LDB.techs.dataArray[i].PreTechsImplicit) +
+        //            " UnlockRecipes: " + Print(LDB.techs.dataArray[i].UnlockRecipes) +
+        //            " UnlockValues: " + Print(LDB.techs.dataArray[i].UnlockValues) +
+        //            " UnlockFunctions: " + Print(LDB.techs.dataArray[i].UnlockFunctions)
+        //            ); ;
+        //    }
         }
 
         private void AdjustUnlocks()
@@ -405,7 +406,12 @@ namespace DysonSphereProgram.Modding.StarterTemplate
                     double tech_multiple = multiple;
                     if (LDB.techs.dataArray[t].LevelCoef1 != 0)
                     {
-                        if (tech_multiple > 50) tech_multiple = 50; // to avoid overflow in int32
+                        // last VU tech
+                        if (LDB.techs.dataArray[t].ID == 3606)
+                        {
+                            if (tech_multiple > 10) tech_multiple = 10;
+                        }
+                        if (tech_multiple > 20) tech_multiple = 20; // to avoid overflow in int32
                         LDB.techs.dataArray[t].HashNeeded *= (long)tech_multiple;
                         LDB.techs.dataArray[t].LevelCoef1 *= (int)tech_multiple;
                         LDB.techs.dataArray[t].LevelCoef2 *= (int)tech_multiple;
@@ -417,6 +423,33 @@ namespace DysonSphereProgram.Modding.StarterTemplate
                 }
             }
         }
+
+        private void AdjustBombDamage()
+        {
+            Log.LogInfo("EpicResearch AdjustBombDamage() called");
+            int item_count = LDB.items.dataArray.Length;
+            for (int t = 0; t < item_count; t++)
+            {
+                if (LDB.items.dataArray[t].isBomb && (LDB.items.dataArray[t].ID < 1200))
+                {
+                    //Log.LogInfo(
+                    //    LDB.items.dataArray[t].ID +
+                    //    " Ability: " + LDB.items.dataArray[t].Ability
+                    //    );
+
+                    int dmg = LDB.items.dataArray[t].Ability;
+                    int new_dmg = dmg / 6;
+                    if (dmg == 10000)
+                        new_dmg = 1500;
+                    else if (dmg == 32000)
+                        new_dmg = 3500;
+                    else if (dmg == 75000)
+                        new_dmg = 7000;
+                    LDB.items.dataArray[t].Ability = new_dmg;
+                }
+            }
+        }
+
 
         private void OnDestroy()
         {
@@ -579,8 +612,8 @@ namespace DysonSphereProgram.Modding.StarterTemplate
 
         // {from_tech_id, to_tech_id, receip_id}
         private static readonly int[,] unlocks_move_data = {
-                {1705, 1508, 79 }, //Adv warper to mission complete tech
-                {1703, 1508, 100 }, //UM particle container to mission complete tech
+                {1705, 1507, 79 }, //Adv warper to universe matrix tech
+                {1703, 1507, 100 }, //UM particle container to universe matrix tech
                 {1125, 1417, 29 }, //Adv casmir crystal to plane smelter
                 {1502, 1202, 69 }, //Adv photon combiner to high-speed assembly
                 {1132, 1305, 35 }, //Adv nanotubes to quantumn chem plant
@@ -717,7 +750,7 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             tech_data[4101] = new int[] { 1800, 10, 20, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[4102] = new int[] { 36000, 10, 20, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[4103] = new int[] { 300000, 90, 1, 12, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[4104] = new int[] { 12000000, 60, 3, -1, -1, 1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[4104] = new int[] { 12000000, 15, 3, -1, -1, 1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2101] = new int[] { 900, 20, 80, 80, -1, -1, -1, -1, 1101, 1104, 6003, 6004, 6005, 6006 };
             tech_data[2102] = new int[] { 36000, 50, 1, 10, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[2103] = new int[] { 108000, 100, 20, 10, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
@@ -809,11 +842,19 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             tech_data[3601] = new int[] { 36000, 100, 20, 60, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3602] = new int[] { 180000, 100, 10, 2, 5, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3603] = new int[] { 540000, 100, 5, 2, 4, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
-            tech_data[3604] = new int[] { 720000, 100, 8, 2, 3, 3, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[3604] = new int[] { 720000, 80, 8, 2, 3, 3, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3605] = new int[] { 1800000, 100, 5, 1, 1, 1, 1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3901] = new int[] { 180000, 100, -1, -1, 6, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3902] = new int[] { 300000, 100, -1, -1, -1, 6, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[3903] = new int[] { 900000, 100, -1, -1, -1, 6, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+
+            // Solar Sail Attaching Speed
+            tech_data[4201] = new int[] { 108000, 100, 20, 10, 5, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[4202] = new int[] { 180000, 100, 40, 10, 4, 2, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[4203] = new int[] { 300000, 50, 40, 6, 6, 6, 6, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[4204] = new int[] { 720000, 50, 40, 10, 10, 5, 2, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[4205] = new int[] { 1440000, 50, 40, 10, 10, 3, 3, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
+            tech_data[4206] = new int[] { 2160000, 50, 40, 10, 10, 4, 4, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
 
             // Gauss Turret
             tech_data[1801] = new int[] { 1800, 2, 40, 40, -1, -1, -1, -1, 1202, 1104, 6003, 6004, 6005, 6006 };
