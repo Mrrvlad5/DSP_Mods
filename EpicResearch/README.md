@@ -4,11 +4,13 @@ Modifies research requirements for a slower game progression.
 ## Features
 - Slower tech progression.
 - Some unlocks happen further down the tech tree to allow the player to use all different kinds of setups the game implements.
-- Try on a Minimal resources 64 star seed, with 100 multiple and adjustments turned on for a hard challenge.
+- Try on a Minimal resources 64 star seed, with 100 multiple and adjustments turned on for a hard challenge. Fog should be disabled.
     - it is expected to run out or resources and having to move systems several times before unlocking warp and logistic warp.
     - it is expected to have a pre-warp logistics between systems at yellow and purple tech.
 - Allows to specify additional resource multipler.
-- Playable with Fog set to max difficulty.
+- Developed and balanced before Fog was introduced into the game.
+- Playable with Fog set to max difficulty, but not recommended.
+- Recuced damage of mk1 and mk2 grenades. Cheaper gauss ammo with increased damage.
 
 ## Configuration
 bool AdjustTechUnlocks = true
@@ -27,7 +29,7 @@ bool  AdjustTechCosts = true
     - Proliferator Mk3 and Fusion require Purple tech.
 
 int TechCostMultiple = 100
-- Apply additional multiplier to hash and cube costs of technologies. Valid values are: {1, 5, 20, 50, 100}.
+- Apply additional multiplier to hash and cube costs of technologies. Valid values are: {1, 5, 10, 20, 50, 100}.
 
 float ResourceMultiple = 1
 - Additional resource multipler for the galaxy. Affects all ore, gas giants, oil. Oil is affected by sqrt of this value.
@@ -40,6 +42,12 @@ Is not compatible with the background autosave feature of BulletTime mod.
 Reach out to mrrvlad#0925 on discord / official DSP server.
 
 ## Changelog
+- v0.4.4
+    - Improved gauss ammo cost and damage.
+
+- v0.4.3
+    - Reduced mk1 and mk2 grenade damage, so it's not easy to clear fog in the first hour of gameplay on 3000%.
+
 - v0.4.2
     - Moved advanced unlocks for warpers and particle containers from mission complete to universe matrix.
     - Reduced Sail Attachment tech costs.

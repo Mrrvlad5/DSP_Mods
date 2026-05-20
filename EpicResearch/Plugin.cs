@@ -4,6 +4,8 @@ using BepInEx.Logging;
 using HarmonyLib;
 using System;
 using System.Drawing;
+using System.IO;
+using System.Reflection;
 using System.Security.Cryptography;
 using UnityEngine;
 using static SimplexNoise;
@@ -25,9 +27,7 @@ namespace DysonSphereProgram.Modding.StarterTemplate
     {
         public const string GUID = "mrrvlad.epic.research";
         public const string NAME = "EpicResearch";
-        public const string VERSION = "0.4.2";
-
-        private static bool scanned = false;
+        public const string VERSION = "0.4.4";
 
         private Harmony _harmony;
         internal static ManualLogSource Log;
@@ -137,7 +137,7 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             ConfigEntry<bool> config_cost = Config.Bind<bool>("General", "AdjustTechCosts", true,
             "Modify type and quantity of materials needed to unlock a tech");
             ConfigEntry<int> config_tech_multiple = Config.Bind<int>("General", "TechCostMultiple", 100,
-            "Apply this multiple to tech costs. Valid vaules are 1, 5, 20, 50, 100.");
+            "Apply this multiple to tech costs. Valid vaules are 1, 5, 10, 20, 50, 100.");
             ConfigEntry<float> config_resource_multiple = Config.Bind<float>("General", "ResourceMultiple", 1.0f,
             "Additional resource multipler for the galaxy. Affects all ore, gas giants, oil. Remote oil seems to be affected as sqrt of this value.");
             Configs.AdjustTechUnlocks = config_unlock.Value;
@@ -146,6 +146,8 @@ namespace DysonSphereProgram.Modding.StarterTemplate
                 Configs.TechCostMultiple = 1;
             else if (config_tech_multiple.Value <= 5)
                 Configs.TechCostMultiple = 5;
+            else if (config_tech_multiple.Value <= 10)
+                Configs.TechCostMultiple = 10;
             else if (config_tech_multiple.Value <= 20)
                 Configs.TechCostMultiple = 20;
             else if (config_tech_multiple.Value <= 50)
@@ -157,7 +159,7 @@ namespace DysonSphereProgram.Modding.StarterTemplate
                 AdjustUnlocks();
             AdjustTechHashCosts(Configs.AdjustTechCosts, Configs.TechCostMultiple);
             AdjustBombDamage();
-
+            AdjustGaussAmmo();
         //    int tech_count = LDB.techs.dataArray.Length;
         //    for (int i = 0; i < tech_count; i++)
         //    {
@@ -438,17 +440,65 @@ namespace DysonSphereProgram.Modding.StarterTemplate
                     //    );
 
                     int dmg = LDB.items.dataArray[t].Ability;
-                    int new_dmg = dmg / 6;
-                    if (dmg == 10000)
-                        new_dmg = 1500;
-                    else if (dmg == 32000)
-                        new_dmg = 3500;
-                    else if (dmg == 75000)
-                        new_dmg = 7000;
+                    int new_dmg = dmg / 5;
+                    if (LDB.items.dataArray[t].ID == 1128)
+                    {
+                        new_dmg = 2000;
+                    }
+                    else if (LDB.items.dataArray[t].ID == 1129)
+                    {
+                        new_dmg = 9000;
+                    }
+                    else if (LDB.items.dataArray[t].ID == 1130)
+                    {
+                        new_dmg = dmg;
+                    }
                     LDB.items.dataArray[t].Ability = new_dmg;
                 }
             }
         }
+
+        private void AdjustGaussAmmo()
+        {
+            Log.LogInfo("EpicResearch AdjustGaussAmmo() called");
+
+            int receipe_count = LDB.recipes.dataArray.Length;
+            for (int t = 0; t < receipe_count; t++)
+            {
+                //Log.LogInfo(
+                //    LDB.recipes.dataArray[t].ID +
+                //    " Name: " + LDB.recipes.dataArray[t].Name +
+                //    " R0: " + LDB.recipes.dataArray[t].Results[0] +
+                //    " I0: " + LDB.recipes.dataArray[t].Items[0]
+                //    );
+                if (LDB.recipes.dataArray[t].ID == 136)
+                {
+                    LDB.recipes.dataArray[t].ItemCounts[0] = 2;
+                }
+                else if (LDB.recipes.dataArray[t].ID == 137)
+                {
+                    LDB.recipes.dataArray[t].ItemCounts[1] = 1;
+                }
+            }
+
+            int item_count = LDB.items.dataArray.Length;
+            for (int t = 0; t < item_count; t++)
+            {
+                if (LDB.items.dataArray[t].ID == 1601)
+                {
+                    LDB.items.dataArray[t].Ability = 800;
+                }
+                else if (LDB.items.dataArray[t].ID == 1602)
+                {
+                    LDB.items.dataArray[t].Ability = 2000;
+                }
+                else if (LDB.items.dataArray[t].ID == 1603)
+                {
+                    LDB.items.dataArray[t].Ability = 4500;
+                }
+            }
+        }
+
 
 
         private void OnDestroy()
@@ -462,137 +512,180 @@ namespace DysonSphereProgram.Modding.StarterTemplate
         //[HarmonyPostfix, HarmonyPatch(typeof(GameMain), "Begin")]
         //public static void RunScan()
         //{
-        //    FPSController.SetFixUPS(60.0);
-        //    //if (!scanned)
-        //    //{
-        //    //    scanned = true;
-        //    //    for (int seed = 0; seed < 100000000; seed++)
-        //    //        ScanSeed(seed);
-        //    //}
+        //    //FPSController.SetFixUPS(60.0);
+        //    if (!scanned)
+        //    {
+        //        //StreamReader reader = new StreamReader("D:\\dsp\\bad_start_scan\\starter_3_moons.txt");
+        //        //try
+        //        //{
+        //        //    do
+        //        //    {
+        //        //        int seed;
+        //        //        reader.ReadLine().ToInt(out seed);
+        //        //        ScanSeed(seed);
+        //        //    }
+        //        //    while (reader.Peek() != -1);
+        //        //}
+        //        //finally
+        //        //{
+        //        //    reader.Close();
+        //        //}
+        //        //scanned = true;
+        //        for (int seed = 0; seed < 100000000; seed++)
+        //            ScanSeed(seed);
+        //    }
         //}
 
-        //private static void ScanSeed(int seed)
-        //{
-        //    const float RESOURCE_MULTIPLIER = 0.1f;
-        //    const int STAR_COUNT = 1;
+//        private static void ScanSeed(int seed)
+//        {
+//            const float RESOURCE_MULTIPLIER = 1.0f;
+//            const int STAR_COUNT = 1;
 
-        //    GameDesc gameDesc = new GameDesc();
-        //    gameDesc.SetForNewGame(UniverseGen.algoVersion, seed, STAR_COUNT, 1, RESOURCE_MULTIPLIER);
-        //    GalaxyData galaxy = UniverseGen.CreateGalaxy(gameDesc);
+//            GameDesc gameDesc = new GameDesc();
+//            gameDesc.SetForNewGame(UniverseGen.algoVersion, seed, STAR_COUNT, 1, RESOURCE_MULTIPLIER);
+//            GalaxyData galaxy = UniverseGen.CreateGalaxy(gameDesc);
 
-        //    // this copy of the multiplier is used in generation. restore it at the end of this function
-        //    float temp = GameMain.data.gameDesc.resourceMultiplier;
-        //    GameMain.data.gameDesc.resourceMultiplier = RESOURCE_MULTIPLIER;
+//            // this copy of the multiplier is used in generation. restore it at the end of this function
+//            float temp = GameMain.data.gameDesc.resourceMultiplier;
+//            GameMain.data.gameDesc.resourceMultiplier = RESOURCE_MULTIPLIER;
 
-        //    StarData star = galaxy.stars[0];
-        //    if (star.planets[0].orbitRadius < 0.5) return;
-        //    //int sat_count = 0;
-        //    int proper_type_count = 0;
-        //    foreach (PlanetData planet in star.planets)
-        //    {
-        //        //if (planet.orbitAround > 0) sat_count++;
-        //        string planetTypeName = LDB.themes.Select(planet.theme).displayName;
-        //        if (planetTypeName == "Maroonfrost") proper_type_count++;
-        //        if (planetTypeName == "Geloterra") proper_type_count++;
-        //    }
-        //    //if (sat_count > 1) return;
-        //    if (proper_type_count < 2) return;
+//            StarData star = galaxy.stars[0];
+//            //if (star.planets[0].orbitRadius < 0.5) return;
+//            float inclination = 0;
+//            int proper_type_count = 0;
 
-        //    long[] starterRes = new long[(int)(EVeinType.Max)];
-        //    long[] other0Res = new long[(int)(EVeinType.Max)];
-        //    long[] other1Res = new long[(int)(EVeinType.Max)];
-        //    for (int idx = 0; idx < starterRes.GetLength(0); idx++)
-        //    {
-        //        other0Res[idx] = 0;
-        //        other1Res[idx] = 0;
-        //        starterRes[idx] = 0;
-        //    }
-        //    string planetTypes = "";
+//            foreach (PlanetData planet in star.planets)
+//            {
+//                if (planet.type == EPlanetType.Gas)
+//                {
+//                    inclination = Math.Abs(planet.orbitInclination);
+//                }
+//                if (planet.orbitAround <= 0) continue;
+//                string planetTypeName = LDB.themes.Select(planet.theme).displayName;
+//                if (planetTypeName == "Mariterra")
+//                {
+//                    inclination += Math.Abs(planet.obliquity) + Math.Abs(planet.orbitInclination);
+//                    if (inclination < 12) return;
+//                    if (inclination > 20) return;
+//                }
+//                if (planetTypeName == "Halitum") proper_type_count++;
+//                //if (planetTypeName == "Gobi") proper_type_count++;
+//                if (planetTypeName == "Geloterra")
+//                {
+//                    proper_type_count++;
+//                }
+//                //if (planetTypeName == "Desolus") proper_type_count++;
+//                //if (planetTypeName == "Scorchedia") proper_type_count++;
+//                //if (planetTypeName == "Maroonfrost") proper_type_count++;
+//            }
+//            //if (sat_count > 1) return;
+//            if (proper_type_count < 2) return;
 
-        //    int other_id = -1;
+//            //long[] starterRes = new long[(int)(EVeinType.Max)];
+//            //long[] other0Res = new long[(int)(EVeinType.Max)];
+//            //long[] other1Res = new long[(int)(EVeinType.Max)];
+//            //for (int idx = 0; idx < starterRes.GetLength(0); idx++)
+//            //{
+//            //    other0Res[idx] = 0;
+//            //    other1Res[idx] = 0;
+//            //    starterRes[idx] = 0;
+//            //}
+//            string planetTypes = "";
 
-        //    foreach (PlanetData planet in star.planets)
-        //    {
+//            int fireice = 0;
+//            for(int planetId = 0; planetId < star.planetCount; planetId++)
+//            {
+//                PlanetData planet = star.planets[planetId];
+//                string planetTypeName = LDB.themes.Select(planet.theme).displayName;
+//                planetTypeName += planet.orbitAround.ToString();
+//                planetTypes += planetTypeName;
+//                planetTypes += ",";
+//                planetTypes += planet.orbitRadius.ToString() + ",";
+//                planetTypes += planet.windStrength.ToString() + ",";
+//                planetTypes += planet.obliquity.ToString() + ",";
 
-        //        string planetTypeName = LDB.themes.Select(planet.theme).displayName;
-        //        planetTypeName += planet.orbitAround.ToString();
-        //        planetTypes += planetTypeName;
-        //        planetTypes += ",";
-        //        planetTypes += planet.orbitRadius.ToString() + ",";
-        //        planetTypes += planet.windStrength.ToString() + ",";
+//                if (planet.type == EPlanetType.Gas)
+//                {
+//                    planetTypes += planet.landPercent.ToString() + ",";
+//                    continue;
+//                }
+//                fireice += GeneratePlanetData(planet);
+//                //planetTypes += planet.landPercent.ToString() + ",";
+//                //if (!planetTypeName.StartsWith("Mariterra"))
+//                //    other_id++;
 
-        //        if (planet.type == EPlanetType.Gas)
-        //        {
-        //            planetTypes += planet.landPercent.ToString() + ","; 
-        //            continue;
-        //        }
+//                //// note that the DSP code frequently uses the first element of arrays as a null entry
+//                //for (int i = 1; i < planet.veinGroups.Length; i++)
+//                //{
+//                //    ref VeinGroup veinGroup = ref planet.veinGroups[i];
+//                //    int type_id = (int)veinGroup.type;
+//                //    if (planetTypeName.StartsWith("Mariterra"))
+//                //        starterRes[type_id] += veinGroup.amount;
+//                //    else
+//                //    {
+//                //        if (other_id == 0)
+//                //            other0Res[type_id] += veinGroup.amount;
+//                //        else
+//                //            other1Res[type_id] += veinGroup.amount;
+//                //    }
+//                //}
 
-        //        GeneratePlanetData(planet);
-        //        planetTypes += planet.landPercent.ToString() + ",";
-        //        if (!planetTypeName.StartsWith("Mariterra"))
-        //            other_id++;
+//                planet.Unload();
+//            }
+//            if (fireice < 500000) return;
 
-        //        // note that the DSP code frequently uses the first element of arrays as a null entry
-        //        for (int i = 1; i < planet.veinGroups.Length; i++)
-        //        {
-        //            ref VeinGroup veinGroup = ref planet.veinGroups[i];
-        //            int type_id = (int)veinGroup.type;
-        //            if (planetTypeName.StartsWith("Mariterra"))
-        //                starterRes[type_id] += veinGroup.amount;
-        //            else
-        //            {
-        //                if (other_id == 0)
-        //                    other0Res[type_id] += veinGroup.amount;
-        //                else
-        //                    other1Res[type_id] += veinGroup.amount;
-        //            }
-        //        }
+//            //if (
+//            //    (starterRes[(int)EVeinType.Copper] > 190000) &&
+//            //    (starterRes[(int)EVeinType.Iron] > 300000)
+//            //    )
+//            {
+//                // generate resource string
+//                string starterResString = "";
+////                for (int idx = 1; idx < 8; idx++) starterResString += starterRes[idx].ToString() + ",";
+//                string other0ResString = "";
+////                for (int idx = 1; idx < 9; idx++) other0ResString += other0Res[idx].ToString() + ",";
+//                string other1ResString = "";
+////                for (int idx = 1; idx < 9; idx++) other1ResString += other1Res[idx].ToString() + ",";
 
-        //        planet.Unload();
-        //    }
+//                Log.LogInfo(seed.ToString("D8") + ","+ fireice.ToString("D8") + "," + inclination.ToString() + "," + starterResString + other0ResString + other1ResString + planetTypes);
+//            }
+//            GameMain.data.gameDesc.resourceMultiplier = temp;
+//        }
 
-        //    if (
-        //        (starterRes[(int)EVeinType.Copper] > 190000) &&
-        //        (starterRes[(int)EVeinType.Iron] > 300000)
-        //        )
-        //    {
-        //        // generate resource string
-        //        string starterResString = "";
-        //        for (int idx = 1; idx < 8; idx++) starterResString += starterRes[idx].ToString() + ",";
-        //        string other0ResString = "";
-        //        for (int idx = 1; idx < 9; idx++) other0ResString += other0Res[idx].ToString() + ",";
-        //        string other1ResString = "";
-        //        for (int idx = 1; idx < 9; idx++) other1ResString += other1Res[idx].ToString() + ",";
-
-        //        Log.LogInfo(seed.ToString("D8") + "," + starterResString + other0ResString + other1ResString + planetTypes);
-        //    }
-        //    GameMain.data.gameDesc.resourceMultiplier = temp;
-        //}
-
-        //private static void GeneratePlanetData(PlanetData planet)
-        //{
-        //    if (planet.calculated)
-        //        return;
-
-        //    // taken from PlanetModelingManager.PlanetCalculateThreadMain()
-        //    PlanetAlgorithm planetAlgorithm = PlanetModelingManager.Algorithm(planet);
-        //    planet.data = new PlanetRawData(planet.precision);
-        //    planet.modData = planet.data.InitModData(planet.modData);
-        //    planet.data.CalcVerts();
-        //    planet.aux = new PlanetAuxData(planet);
-        //    planetAlgorithm.GenerateTerrain(planet.mod_x, planet.mod_y);
-        //    //planetAlgorithm.CalcWaterPercent();
-        //    planet.data.vegeCursor = 1;
-        //    // vein generation doesn't consider collision with vegetables (i.e. rocks, trees, etc.)
-        //    /*if (planet.type != EPlanetType.Gas)
-        //        planetAlgorithm.GenerateVegetables();*/
-        //    planet.data.veinCursor = 1;
-        //    if (planet.type != EPlanetType.Gas)
-        //        planetAlgorithm.GenerateVeins();
-        //    planet.CalculateVeinGroups();
-        //    //planet.GenBirthPoints();
-        //    planet.NotifyCalculated();
-        //}
+//        private static int GeneratePlanetData(PlanetData planet)
+//        {
+//            PlanetAlgorithm planetAlgorithm = PlanetModelingManager.Algorithm(planet);
+//            planet.data = new PlanetRawData(planet.precision);
+//            planet.modData = planet.data.InitModData(planet.modData);
+//            planet.data.CalcVerts();
+//            planet.aux = new PlanetAuxData(planet);
+//            planetAlgorithm.GenerateTerrain(planet.mod_x, planet.mod_y);
+//            //planetAlgorithm.CalcWaterPercent();
+//            planet.data.vegeCursor = 1;
+//            //if (planet.type != EPlanetType.Gas)
+//            //{
+//            //    planetAlgorithm.GenerateVegetables();
+//            //}
+//            planet.data.veinCursor = 1;
+//            int fireice = 0;
+//            if (planet.type != EPlanetType.Gas)
+//            {
+//                planetAlgorithm.GenerateVeins();
+//                VeinData[] veinPool = planet.data.veinPool;
+//                int veinCursor = planet.data.veinCursor;
+//                //Log.LogInfo(veinCursor.ToString());
+//                for (int j = 1; j < veinCursor; j++)
+//                {
+//                    if (veinPool[j].type == EVeinType.Fireice)
+//                        fireice += veinPool[j].amount;
+//                }
+//                //Log.LogInfo(fireice.ToString());
+//            }
+//            //planet.SummarizeVeinGroups();
+//            //planet.GenBirthPoints();
+//            //planet.NotifyLoaded();
+//            return fireice;
+//        }
 
 
 
@@ -672,9 +765,9 @@ namespace DysonSphereProgram.Modding.StarterTemplate
             tech_data = new System.Collections.Generic.Dictionary<int, int[]>();
             tech_data[1001] = new int[] { 1200, 2, 30, -1, -1, -1, -1, -1, 1202, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1601] = new int[] { 1800, 5, 40, 40, -1, -1, -1, -1, 1301, 1201, 6003, 6004, 6005, 6006 };
-            tech_data[1401] = new int[] { 1800, 2, 40, 40, -1, -1, -1, -1, 1202, 1301, 6003, 6004, 6005, 6006 };
-            tech_data[1002] = new int[] { 1800, 10, 200, 200, -1, -1, -1, -1, 1202, 1301, 6003, 6004, 6005, 6006 };
-            tech_data[1201] = new int[] { 900, 10, 40, 40, -1, -1, -1, -1, 1101, 1104, 6003, 6004, 6005, 6006 };
+            tech_data[1401] = new int[] { 900, 5, 40, 40, -1, -1, -1, -1, 1202, 1301, 6003, 6004, 6005, 6006 };
+            tech_data[1002] = new int[] { 3600, 5, 200, 200, -1, -1, -1, -1, 1202, 1301, 6003, 6004, 6005, 6006 };
+            tech_data[1201] = new int[] { 1800, 5, 80, 80, -1, -1, -1, -1, 1101, 1104, 6003, 6004, 6005, 6006 };
             tech_data[1120] = new int[] { 9000, 100, 20, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1101] = new int[] { 9000, 100, 20, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };
             tech_data[1701] = new int[] { 9000, 40, 40, -1, -1, -1, -1, -1, 6001, 6002, 6003, 6004, 6005, 6006 };

@@ -1,3 +1,9 @@
+- v0.4.4
+    - Improved gauss ammo cost and damage.
+
+- v0.4.3
+    - Reduced mk1 and mk2 grenade damage, so it's not easy to clear fog in the first hour of gameplay on 3000%.
+
 - v0.4.2
     - Moved advanced unlocks for warpers and particle containers from mission complete to universe matrix.
     - Reduced Sail Attachment tech costs.
